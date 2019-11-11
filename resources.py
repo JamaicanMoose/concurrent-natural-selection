@@ -1,4 +1,5 @@
 import random
+from item import Resource
 
 MAX_STRENGTH_MULTIPLIER = 5
 MAX_MOVEMENT_MULTIPLIER = 5
@@ -43,8 +44,4 @@ class Resources:
             else: 
                 break
 
-
-
-        resource_dict["strength"] = strength
-        resource_dict["movement"] = movement
-        return resource_dict
+        return Resource(strength=strength, speed=speed)

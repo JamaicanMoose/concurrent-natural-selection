@@ -42,7 +42,7 @@ class Member(Item):
 
     def walk(self, map_obj):
         self.step(map_obj)
-
+    #change to increasing strength using percentage instead of adding to surrounding member kevin
     def step(self, map_obj):
         curr_loc = map_obj.loc(self)
         move = choice(((1,0), (-1,0), (0,1), (0,-1)))

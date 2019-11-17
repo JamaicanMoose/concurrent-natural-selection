@@ -14,6 +14,8 @@ NUM_RESOURCES = 15
 WIDTH = 10
 HEIGHT = 10
 
+### INIT CODE ###
+
 map_obj = Map(width=WIDTH,height=HEIGHT)
 pos_set = set([(i,j) for i in range(WIDTH) for j in range(HEIGHT)])
 
@@ -22,6 +24,8 @@ win = curses.newwin(len(repr(map_obj).split('\n'))+1, max([len(s) for s in repr(
 curses.noecho()
 curses.cbreak()
 stdscr.keypad(True)
+
+### GUI CHANGE FUNCTIONS
 
 def draw_map():
     win.clear()
@@ -35,6 +39,9 @@ def end_sim():
     curses.endwin()
     print(map_obj)
 
+### GENERATES INIT MAP ITEMS ###
+
+#TODO: user specifies each species strength, speed, and number aditi
 for i in range(NUM_SPECIES):
     for _ in range(NUM_MEMBERS):
         m = Member(
@@ -59,6 +66,11 @@ for _ in range(NUM_RESOURCES):
 
 end_event = Event()
 
+
+#TODO: Create new thread to randomly add resources kevin
+
+#TODO : Decide if 0 speed species are possible and if not remove 
+### Checks if nothing has changed in 5 seconds and ends if true.
 def frozen_monitor_thread():
     while not end_event.is_set():
         with map_obj.lock:
@@ -71,6 +83,10 @@ def frozen_monitor_thread():
                 print([(m.species_id, m.skill) for m in members])
                 break
 
+
+
+#TODO : Move completion checks to member threads (check if complete after each move) aditi
+### Checks if only one spcecies is left or none every second and ends if true
 def completion_monitor_thread():
     start_time = time()
     while not end_event.is_set():
@@ -90,6 +106,7 @@ def completion_monitor_thread():
                     print(f'All species dead after {s} seconds.')
                     break
 
+### Thread management
 fmt = Thread(target=frozen_monitor_thread)
 fmt.start()
 cmt = Thread(target=completion_monitor_thread)

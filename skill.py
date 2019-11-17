@@ -1,5 +1,6 @@
 from item import Item
 
+### Add __mul__ (Skill, int) => Skill to scale skill by an integer kevin
 class Skill():
     def __init__(self, strength: int = 0, speed: int = 0):
         self.strength = strength

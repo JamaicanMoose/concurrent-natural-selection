@@ -22,11 +22,10 @@ class Member(Item):
     def move(self, map_obj):
         with map_obj.lock:
             if self in map_obj:
-                if randint(1, BASE_CHANCE//self.repr_chc) == 1:
+                if randint(1, BASE_CHANCE//self.repr_chc) == 1 and self.skill.strength >= 2:
                     self.reproduce(map_obj)
                 else:
                     self.walk(map_obj)
-            #print(map_obj)
 
     def walk(self, map_obj):
         for _ in range(self.skill.speed):
@@ -62,8 +61,9 @@ class Member(Item):
         shuffle(adj_set)
         for pos in adj_set:
             if map_obj.in_bounds(pos) and map_obj.at(pos) == None:
-                child_skill = self.skill // 2
-                self.skill -= child_skill
+                child_skill = self.init_skill.copy()
+                #child_skill = self.skill // 2
+                #self.skill -= child_skill
                 child = Member(
                     skill=child_skill, 
                     species_id=self.species_id, 

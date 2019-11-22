@@ -11,7 +11,7 @@ from time import sleep
 BASE_CHANCE = 1000
 
 class Member(Item):
-    def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, reproduction_chance: int):
+    def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, reproduction_chance: int, sim):
         assert(reproduction_chance <= BASE_CHANCE)
         this = self
         self._stop = Event()
@@ -29,6 +29,7 @@ class Member(Item):
         self.skill = skill.copy()
         self.species_id = species_id
         self.repr_chc = reproduction_chance
+        self.sim = sim
 
     def __repr__(self):
         return str(self.species_id)
@@ -40,7 +41,7 @@ class Member(Item):
             else:
                 self.walk(map_obj)
             if(map_obj.game_over()):
-                simulator.end_sim()
+                self.sim.end_sim()
 
     def walk(self, map_obj):
         self.step(map_obj)
@@ -82,7 +83,7 @@ class Member(Item):
                     map_obj=map_obj,
                     skill=child_skill, 
                     species_id=self.species_id, 
-                    reproduction_chance=self.repr_chc)
+                    reproduction_chance=self.repr_chc, sim=self.sim)
                 map_obj.add(child, pos)
                 child._thread.start()
                 break

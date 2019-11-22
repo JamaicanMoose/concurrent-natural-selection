@@ -39,6 +39,8 @@ class Member(Item):
                 self.reproduce(map_obj)
             else:
                 self.walk(map_obj)
+            if(map_obj.game_over()):
+                simulator.end_sim()
 
     def walk(self, map_obj):
         self.step(map_obj)

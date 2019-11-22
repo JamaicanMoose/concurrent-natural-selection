@@ -2,6 +2,7 @@
 """
 
 from threading import Lock
+import random
 
 class Map:
     def __init__(self, width, height):
@@ -60,5 +61,11 @@ class Map:
         if pos[0] < 0 or pos[0] > self.height - 1: return False
         if pos[1] < 0 or pos[1] > self.width - 1: return False
         return True
+
+    def game_over(self):
+        x = random.randint(0, 30)
+        if (x == 4):
+            return True
+        return False
 
 def apply_delta(curr, d): return (curr[0]+d[0], curr[1]+d[1])

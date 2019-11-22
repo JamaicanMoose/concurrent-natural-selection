@@ -44,4 +44,7 @@ class Resources:
             else: 
                 break
 
-        return Resource(strength=strength, speed=speed)
+        strength = (strength - 1) * .20 + 1
+        movement = (movement - 1) * .20 + 1
+
+        return Resource(strength=strength, speed=movement)

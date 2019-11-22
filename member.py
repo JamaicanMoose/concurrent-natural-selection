@@ -51,7 +51,7 @@ class Member(Item):
             if map_obj.at(new_loc) == None:
                 map_obj.move(self, new_loc)
             elif isinstance(map_obj.at(new_loc), Resource):
-                self.skill += map_obj.at(new_loc)
+                self.skill *= map_obj.at(new_loc)
                 map_obj.move(self, new_loc)
             elif isinstance(map_obj.at(new_loc), Member):
                 other = map_obj.at(new_loc)

@@ -19,6 +19,10 @@ class Skill():
         return Skill(
             strength=self.strength//div,
             speed=self.speed//div)
+    def __mul__(self, other):
+        return Skill(
+            strength=self.strength*other.strength,
+            speed=self.speed*other.speed)
     def copy(self):
         return Skill(
             strength=self.strength,

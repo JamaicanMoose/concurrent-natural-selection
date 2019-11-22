@@ -1,7 +1,7 @@
 from map import Map
 from member import Member, BASE_CHANCE
 from skill import Skill, Resource
-from random import randint, choice
+from random import randint, choice, lognormvariate
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, Event
 import curses
@@ -13,6 +13,7 @@ NUM_MEMBERS = 2
 NUM_RESOURCES = 15
 WIDTH = 10
 HEIGHT = 10
+RESOURCE_SPAWN_RATE = 25
 
 ### INIT CODE ###
 
@@ -58,8 +59,8 @@ for i in range(NUM_SPECIES):
 
 for _ in range(NUM_RESOURCES):
     r = Resource(
-        strength=randint(0,1),
-        speed=randint(0,1))
+        strength=lognormvariate(.5,.1),
+        speed=lognormvariate(.5,.1))
     pos = choice(list(pos_set))
     pos_set.remove(pos)
     map_obj.add(r, pos)
@@ -68,8 +69,23 @@ end_event = Event()
 
 
 #TODO: Create new thread to randomly add resources kevin
+def random_resource_inclusion():
+    while not end_event.is_set():
+        with map_obj.lock:
+            old_locations = map_obj.locations.copy()
+        sleep(randint(0, RESOURCE_SPAWN_RATE))
+        with map_obj.lock:
+            if map_obj.locations == old_locations:
+                break
+            else:
+                r = Resource(
+                    strength=lognormvariate(.5,.1),
+                    speed=lognormvariate(.5,.1))
+                pos = choice(list(pos_set))
+                pos_set.remove(pos)
+                # print(f'Setting random resource at pos {pos}')
+                map_obj.add(r, pos)            
 
-#TODO : Decide if 0 speed species are possible and if not remove 
 ### Checks if nothing has changed in 5 seconds and ends if true.
 def frozen_monitor_thread():
     while not end_event.is_set():
@@ -111,12 +127,15 @@ fmt = Thread(target=frozen_monitor_thread)
 fmt.start()
 cmt = Thread(target=completion_monitor_thread)
 cmt.start()
+rri = Thread(target=random_resource_inclusion)
+rri.start()
 members = [map_obj.at(pos) for pos in map_obj.locations.values() if isinstance(map_obj.at(pos), Member)]
 for m in members:
     m._thread.start()
 
 cmt.join()
 fmt.join()
+rri.join()
 
 members = [map_obj.at(pos) for pos in map_obj.locations.values() if isinstance(map_obj.at(pos), Member)]
 for m in members:

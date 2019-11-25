@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 from item import Item
 
 ### Add __mul__ (Skill, int) => Skill to scale skill by an integer kevin
@@ -9,11 +11,11 @@ class Skill():
         return f'Skill(strength={self.strength}, speed={self.speed})'
     def __add__(self, other):
         return Skill(
-            strength=(self.strength+other.strength), 
+            strength=(self.strength+other.strength),
             speed=(self.speed+other.speed))
     def __sub__(self, other):
         return Skill(
-            strength=(self.strength-other.strength), 
+            strength=(self.strength-other.strength),
             speed=(self.speed-other.speed))
     def __floordiv__(self, div: int):
         return Skill(
@@ -27,3 +29,7 @@ class Skill():
 class Resource(Item, Skill):
     def __repr__(self):
         return 'R'
+
+    @property
+    def type(self):
+        return 'resource'

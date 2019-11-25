@@ -1,3 +1,4 @@
+# pylint: skip-file
 import random
 from item import Resource
 
@@ -35,13 +36,13 @@ class Resources:
         for i in range(MAX_STRENGTH_MULTIPLIER - 2):
             if random.randint(1,UPGRADE_ODDS) == 1:
                 strength += 1
-            else: 
+            else:
                 break
 
         for i in range(MAX_MOVEMENT_MULTIPLIER - 2):
             if random.randint(1,UPGRADE_ODDS) == 1:
                 movement += 1
-            else: 
+            else:
                 break
 
         return Resource(strength=strength, speed=speed)

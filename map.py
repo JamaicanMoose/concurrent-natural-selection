@@ -1,20 +1,23 @@
+# pylint: skip-file
 """Defines the Map class representing a simulation map.
 """
-
-from threading import Lock
+from item import Item
+from threading import Lock, Event
 import random
 
-class Map:
+class Map():
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.arr = [[None]*width for _ in range(height)] #(row, col)
-        self.locations = {}
+        self.members = {}
+        self.resources = {}
         self.lock = Lock()
+        self.game_over = Event()
 
     def __repr__(self):
         rep = ''
-        repfn = lambda o: ' ' if o == None else repr(o) 
+        repfn = lambda o: ' ' if o == None else repr(o)
         for row in self.arr:
             rep += ' | '.join([repfn(o) for o in row]) + '\n'
             rep += ('-'*(self.width+3*(self.width-1))) + '\n'
@@ -23,8 +26,13 @@ class Map:
     def __getitem__(self, pos):
         return self.at(pos)
 
-    def __contains__(self, item):
-        return item.id in self.locations
+    def __contains__(self, item: Item):
+        if item.type == 'member':
+            return item.id in self.members
+        elif item.type == 'resource':
+            return item.id in self.resources
+        else:
+            return False
 
     def add(self, item, pos):
         self.remove(self.at(pos))
@@ -43,15 +51,25 @@ class Map:
         self._setloc(item, pos)
 
     def _setloc(self, item, pos):
-        if pos: 
-            self.locations[item.id] = pos
+        locations = None
+        if item.type == 'member':
+            locations = self.members
+        elif item.type == 'resource':
+            locations = self.resources
+        if pos:
+            locations[item.id] = pos
         else:
-            del self.locations[item.id]
+            del locations[item.id]
 
-    def loc(self, item):
-        return self.locations[item.id]
+    def loc(self, item: Item):
+        locations = None
+        if item.type == 'member':
+            locations = self.members
+        elif item.type == 'resource':
+            locations = self.resources
+        return locations[item.id]
 
-    def _setat(self, pos, item):
+    def _setat(self, pos, item: Item):
         self.arr[pos[0]][pos[1]] = item
 
     def at(self, pos):
@@ -62,10 +80,18 @@ class Map:
         if pos[1] < 0 or pos[1] > self.width - 1: return False
         return True
 
-    def game_over(self):
-        x = random.randint(0, 30)
-        if (x == 4):
-            return True
-        return False
+    @property
+    def is_game_over(self):
+        return self.game_over.is_set()
+
+    def check_game_over(self):
+        members = [self.at(pos) for pos in self.members.values()]
+        mem_set = set([m.species_id for m in members])
+        if len(mem_set) <= 1:
+            if len(mem_set) == 1:
+                print(f'Species {members[0].species_id} wins!')
+            elif len(mem_set) == 0:
+                print(f'All species dead.')
+            self.game_over.set()
 
 def apply_delta(curr, d): return (curr[0]+d[0], curr[1]+d[1])

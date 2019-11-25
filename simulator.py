@@ -8,6 +8,26 @@ from threading import Thread, Event, active_count
 import curses
 from time import sleep, time
 
+class Window:
+    def __init__(self, height=0, width=0):
+        self.stdscr = curses.initscr()
+        self.win = curses.newwin(height, width, 0,0)
+        curses.noecho()
+        curses.cbreak()
+        self.stdscr.keypad(True)
+
+    def end(self):
+        curses.nocbreak()
+        self.stdscr.keypad(False)
+        curses.echo()
+        curses.endwin()
+
+    def draw_string(self, string):
+        self.stdscr.clear()
+        self.win.clear()
+        self.win.addstr(0,0,string)
+        self.win.refresh()
+
 class Simulator:
     def __init__(self):
         self.num_species = 3
@@ -17,11 +37,9 @@ class Simulator:
         self.height = 10
         self.map_obj = Map(width=self.width,height=self.height)
         self.pos_set = pos_set = set([(i,j) for i in range(self.width) for j in range(self.height)])
-        self.stdscr = curses.initscr()
-        self.win = curses.newwin(len(repr(self.map_obj).split('\n'))+1, max([len(s) for s in repr(self.map_obj).split('\n')])+1, 0,0)
-        curses.noecho()
-        curses.cbreak()
-        self.stdscr.keypad(True)
+        win_height = len(repr(self.map_obj).split('\n'))+1
+        win_width = max([len(s) for s in repr(self.map_obj).split('\n')])+1
+        self.win = Window(height=win_height, width=win_width)
         self.init_map();
 
     def init_map(self):
@@ -56,10 +74,7 @@ class Simulator:
             if active_count() == 1:
                 break
             sleep(1)
-        curses.nocbreak()
-        self.stdscr.keypad(False)
-        curses.echo()
-        curses.endwin()
+        self.win.end()
         self.print_end_state()
 
     def print_end_state(self):
@@ -67,7 +82,4 @@ class Simulator:
         self.map_obj.check_game_over()
 
     def draw_map(self):
-        self.stdscr.clear()
-        self.win.clear()
-        self.win.addstr(0,0,repr(self.map_obj))
-        self.win.refresh()
+        self.win.draw_string(repr(self.map_obj))

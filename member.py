@@ -3,13 +3,11 @@
 """
 from item import Item
 from skill import Skill, Resource
-from random import choice, shuffle, randint
+from random import choice, shuffle, randint, uniform
 from map import Map, apply_delta
 from threading import Thread, Event
 from time import sleep
-
-BASE_CHANCE = 1000
-SIM_SPEED_MULT = 100
+from defs import SIM_SPEED_MULT, BASE_CHANCE
 
 class Member(Item):
     def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, reproduction_chance: int):
@@ -22,11 +20,11 @@ class Member(Item):
                     if map_obj.is_game_over:
                         break
                     this.move(map_obj)
-                    draw_fn()
+                    #draw_fn()
                     map_obj.check_game_over()
                 max_sleep_int = 10-this.skill.speed if 10-this.skill.speed > 0 else 0
                 min_sleep_int = 10-this.skill.speed-2 if 10-this.skill.speed-2 > 0 else 0
-                sleep(randint(min_sleep_int, max_sleep_int)/SIM_SPEED_MULT)
+                sleep(uniform(min_sleep_int, max_sleep_int)/SIM_SPEED_MULT)
         self._thread = Thread(target=member_thread)
         self._draw_fn = draw_fn
         self.init_skill = skill.copy()
@@ -36,6 +34,9 @@ class Member(Item):
 
     def __repr__(self):
         return str(self.species_id)
+
+    def stats(self):
+        return f'Species:{self.species_id}; Speed:{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}'
 
     @property
     def type(self):
@@ -62,7 +63,7 @@ class Member(Item):
             if map_obj.at(new_loc) == None:
                 map_obj.move(self, new_loc)
             elif isinstance(map_obj.at(new_loc), Resource):
-                self.skill += map_obj.at(new_loc)
+                self.skill *= map_obj.at(new_loc)
                 map_obj.move(self, new_loc)
             elif isinstance(map_obj.at(new_loc), Member):
                 other = map_obj.at(new_loc)

@@ -12,6 +12,7 @@ class Map():
         self.arr = [[None]*width for _ in range(height)] #(row, col)
         self.members = {}
         self.resources = {}
+        self.empty_pos = set([(i,j) for i in range(width) for j in range(height)])
         self.lock = Lock()
         self.game_over = Event()
 
@@ -36,19 +37,26 @@ class Map():
 
     def add(self, item, pos):
         self.remove(self.at(pos))
+        self.empty_pos.discard(pos)
         self._setat(pos, item)
         self._setloc(item, pos)
 
     def remove(self, item):
         if item == None: return
-        self._setat(self.loc(item), None)
+        item_pos = self.loc(item)
+        self._setat(item_pos, None)
         self._setloc(item, None)
+        self.empty_pos.add(item_pos)
+
 
     def move(self, item, pos):
         self.remove(self.at(pos))
-        self._setat(self.loc(item), None)
+        item_pos = self.loc(item)
+        self._setat(item_pos, None)
+        self.empty_pos.add(item_pos)
         self._setat(pos, item)
         self._setloc(item, pos)
+        self.empty_pos.discard(pos)
 
     def _setloc(self, item, pos):
         locations = None

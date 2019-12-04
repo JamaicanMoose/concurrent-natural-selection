@@ -1,13 +1,16 @@
 # pylint: skip-file
+import curses
+from random import randint, choice, uniform
+from random import lognormvariate as lnv
+from concurrent.futures import ThreadPoolExecutor
+from threading import Thread, Event, active_count
+from time import sleep, time
+from collections import Counter
+
 from map import Map
 from member import Member
 from skill import Skill, Resource
-from random import randint, choice, lognormvariate, uniform
-from concurrent.futures import ThreadPoolExecutor
-from threading import Thread, Event, active_count
-import curses
-from time import sleep, time
-from defs import SIM_SPEED_MULT, BASE_CHANCE, nvcl, RESOURCE_MEAN, RESOURCE_STDEV
+from defs import SIM_SPEED_MULT, BASE_CHANCE, RESOURCE_MEAN, RESOURCE_STDEV
 
 class Window:
     def __init__(self, height=0, width=0):
@@ -33,7 +36,13 @@ class Window:
         self.scorewin.clear()
         members = [map_obj.at(pos) for pos in map_obj.members.values()]
         members.sort(key=lambda m: m.skill.strength + m.skill.speed)
-        string = '\n'.join([m.stats() for m in members[:10]])
+        sep = '---------------'
+        header = 'Top Ten Members'
+        counts = list(Counter([m.species_id for m in members]).items())
+        counts.sort(key=lambda c: c[1])
+        countstr = '\n'.join([f'Species {c[0]}: {c[1]}' for c in counts])
+        statstr = '\n'.join([m.stats() for m in members[:10]])
+        string = '\n'.join([header, sep, countstr, sep, statstr])
         self.scorewin.addstr(0,0, string)
         self.scorewin.refresh()
 
@@ -68,8 +77,8 @@ class Simulator:
                 self.map_obj.add(m, pos)
         for _ in range(self.num_resources):
             r = Resource(
-                strength=nvcl(RESOURCE_MEAN, RESOURCE_STDEV),
-                speed=nvcl(RESOURCE_MEAN, RESOURCE_STDEV))
+                strength=lnv(RESOURCE_MEAN, RESOURCE_STDEV),
+                speed=lnv(RESOURCE_MEAN, RESOURCE_STDEV))
             pos = choice(list(self.pos_set))
             self.pos_set.remove(pos)
             self.map_obj.add(r, pos)
@@ -83,8 +92,8 @@ class Simulator:
                 if self.map_obj.is_game_over:
                     break
                 r = Resource(
-                    strength=nvcl(RESOURCE_MEAN, RESOURCE_STDEV),
-                    speed=nvcl(RESOURCE_MEAN, RESOURCE_STDEV))
+                    strength=lnv(RESOURCE_MEAN, RESOURCE_STDEV),
+                    speed=lnv(RESOURCE_MEAN, RESOURCE_STDEV))
                 pos = choice(list(self.map_obj.empty_pos))
                 self.map_obj.add(r, pos)
             sleep(uniform(0, BASE_CHANCE/self.resource_spawn_rate)/SIM_SPEED_MULT)

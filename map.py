@@ -14,7 +14,7 @@ class Map():
         self.resources = {}
         self.empty_pos = set([(i,j) for i in range(width) for j in range(height)])
         self.lock = Lock()
-        self.game_over = Event()
+        self.game_over = False
 
     def __repr__(self):
         rep = ''
@@ -90,7 +90,7 @@ class Map():
 
     @property
     def is_game_over(self):
-        return self.game_over.is_set()
+        return self.game_over
 
     def check_game_over(self):
         members = [self.at(pos) for pos in self.members.values()]
@@ -100,6 +100,6 @@ class Map():
                 print(f'Species {members[0].species_id} wins!')
             elif len(mem_set) == 0:
                 print(f'All species dead.')
-            self.game_over.set()
+            self.game_over = True
 
 def apply_delta(curr, d): return (curr[0]+d[0], curr[1]+d[1])

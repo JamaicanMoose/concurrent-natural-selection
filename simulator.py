@@ -66,8 +66,8 @@ class Simulator:
         self.num_members = 2
         self.num_resources = 15
         self.resource_spawn_rate = BASE_CHANCE//20
-        self.width = 30
-        self.height = 30
+        self.width = 10
+        self.height = 10
         self.map_obj = Map(width=self.width,height=self.height)
         self.pos_set = pos_set = set([(i,j) for i in range(self.width) for j in range(self.height)])
         self.win = Window()

@@ -1,5 +1,6 @@
 # pylint: skip-file
-import curses
+import urwid
+import urwid.raw_display
 from random import randint, choice, uniform
 from random import lognormvariate as lnv
 from concurrent.futures import ThreadPoolExecutor
@@ -13,27 +14,23 @@ from skill import Skill, Resource
 from defs import SIM_SPEED_MULT, BASE_CHANCE, RESOURCE_MEAN, RESOURCE_STDEV
 
 class Window:
-    def __init__(self, height=0, width=0):
-        self.stdscr = curses.initscr()
-        self.win = curses.newwin(height, width, 0,0)
-        self.scorewin = curses.newwin(height, width, 0, width+1)
-        curses.noecho()
-        curses.cbreak()
-        self.stdscr.keypad(True)
+    def __init__(self):
+        self.map = urwid.Text('')
+        self.scoreboard = urwid.Text('')
+        self.widgetlist = [urwid.Filler(w, 'top') for w in [self.map, self.scoreboard]]
+        self.win = urwid.Columns(self.widgetlist, dividechars=2)
+        self.loop = urwid.MainLoop(self.win)
 
-    def end(self):
-        curses.nocbreak()
-        self.stdscr.keypad(False)
-        curses.echo()
-        curses.endwin()
+    def start(self):
+        self.loop.start()
 
-    def draw_map(self, map_obj):
-        self.win.clear()
-        self.win.addstr(0,0,repr(map_obj))
-        self.win.refresh()
+    def stop(self):
+        self.loop.stop()
 
-    def draw_scores(self, map_obj):
-        self.scorewin.clear()
+    def draw(self, map_obj):
+        # Render Map
+        self.map.set_text(repr(map_obj))
+        # Render Scoreboard
         members = [map_obj.at(pos) for pos in map_obj.members.values()]
         members.sort(key=lambda m: m.skill.strength + m.skill.speed)
         sep = '---------------'
@@ -43,8 +40,10 @@ class Window:
         countstr = '\n'.join([f'Species {c[0]}: {c[1]}' for c in counts])
         statstr = '\n'.join([m.stats() for m in members[:10]])
         string = '\n'.join([header, sep, countstr, sep, statstr])
-        self.scorewin.addstr(0,0, string)
-        self.scorewin.refresh()
+        self.scoreboard.set_text(string)
+        # Draw Screen
+        self.loop.draw_screen()
+
 
 class Simulator:
     def __init__(self):
@@ -52,13 +51,11 @@ class Simulator:
         self.num_members = 2
         self.num_resources = 15
         self.resource_spawn_rate = BASE_CHANCE//20
-        self.width = 10
-        self.height = 10
+        self.width = 30
+        self.height = 30
         self.map_obj = Map(width=self.width,height=self.height)
         self.pos_set = pos_set = set([(i,j) for i in range(self.width) for j in range(self.height)])
-        win_height = len(repr(self.map_obj).split('\n'))+1
-        win_width = max([len(s) for s in repr(self.map_obj).split('\n')])+1
-        self.win = Window(height=win_height, width=win_width)
+        self.win = Window()
         self.init_map();
 
     def init_map(self):
@@ -103,10 +100,10 @@ class Simulator:
         self.map_obj.check_game_over()
 
     def draw(self):
-        self.win.draw_map(self.map_obj)
-        self.win.draw_scores(self.map_obj)
+        self.win.draw(self.map_obj)
 
     def start(self):
+        self.win.start()
         for m in self.members():
             m._thread.start()
         Thread(target=self._random_resource_inclusion_thread).start()
@@ -115,5 +112,5 @@ class Simulator:
                 break
             self.draw()
             sleep(.2)
-        self.win.end()
+        self.win.stop()
         self.print_end_state()

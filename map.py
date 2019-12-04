@@ -4,6 +4,7 @@
 from item import Item
 from threading import Lock, Event
 import random
+from itertools import chain
 
 
 class Map():
@@ -15,7 +16,7 @@ class Map():
         self.resources = {}
         self.empty_pos = set([(i,j) for i in range(width) for j in range(height)])
         self.lock = Lock()
-        self.game_over = Event()
+        self.game_over = False
 
     def __repr__(self):
         rep = ''
@@ -23,6 +24,19 @@ class Map():
         for row in self.arr:
             rep += '  |  '.join([repfn(o) for o in row]) + '\n'
             rep += ('--'*(self.width+3*(self.width-1))) + '\n'
+        return rep
+
+    def markup(self):
+        def intersperse(lst, item):
+            result = [item] * (len(lst) * 2 - 1)
+            result[0::2] = lst
+            return result
+        rep = []
+        repfn = lambda o: [' '] if o == None else o.markup()
+        for row in self.arr:
+            rep += intersperse(list(chain.from_iterable([repfn(o) for o in row])), ' | ')
+            rep.append('\n')
+            rep += ('-'*(self.width+3*(self.width-1))) + '\n'
         return rep
 
     def __getitem__(self, pos):
@@ -91,7 +105,7 @@ class Map():
 
     @property
     def is_game_over(self):
-        return self.game_over.is_set()
+        return self.game_over
 
     def check_game_over(self):
         members = [self.at(pos) for pos in self.members.values()]
@@ -101,6 +115,6 @@ class Map():
                 print(f'Species {members[0].species_id} wins!')
             elif len(mem_set) == 0:
                 print(f'All species dead.')
-            self.game_over.set()
+            self.game_over = True
 
 def apply_delta(curr, d): return (curr[0]+d[0], curr[1]+d[1])

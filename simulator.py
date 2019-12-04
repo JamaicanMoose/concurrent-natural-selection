@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, Event, active_count
 from time import sleep, time
 from collections import Counter
+from signal import signal, SIGINT
 
 from map import Map
 from member import Member
@@ -95,8 +96,11 @@ class Simulator:
                 self.map_obj.add(r, pos)
             sleep(uniform(0, BASE_CHANCE/self.resource_spawn_rate)/SIM_SPEED_MULT)
 
+    def _ctrlc_handler(self, signal_received, frame):
+        with self.map_obj.lock:
+            self.map_obj.game_over = True
+
     def print_end_state(self):
-        #print(self.map_obj)
         self.map_obj.check_game_over()
 
     def draw(self):
@@ -104,6 +108,7 @@ class Simulator:
 
     def start(self):
         self.win.start()
+        signal(SIGINT, self._ctrlc_handler)
         for m in self.members():
             m._thread.start()
         Thread(target=self._random_resource_inclusion_thread).start()

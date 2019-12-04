@@ -1,6 +1,5 @@
 # pylint: skip-file
 import urwid
-import urwid.raw_display
 from random import randint, choice, uniform
 from random import lognormvariate as lnv
 from concurrent.futures import ThreadPoolExecutor
@@ -14,6 +13,12 @@ from member import Member
 from skill import Skill, Resource
 from defs import SIM_SPEED_MULT, BASE_CHANCE, RESOURCE_MEAN, RESOURCE_STDEV
 
+BEST = 28 # green_4
+BETTER = 112 # chartreuse_2b
+NORMAL = 208 # dark_orange
+WORSE = 220 # gold_1
+WORST = 124 # red_3a
+
 class Window:
     def __init__(self):
         self.map = urwid.Text('')
@@ -21,6 +26,15 @@ class Window:
         self.widgetlist = [urwid.Filler(w, 'top') for w in [self.map, self.scoreboard]]
         self.win = urwid.Columns(self.widgetlist, dividechars=2)
         self.loop = urwid.MainLoop(self.win)
+        self.loop.screen.set_terminal_properties(colors=256)
+        palette = [
+            ('best', 'white', 'default', None, None, 'h28'),
+            ('better', 'white', 'default', None, None, 'h112'),
+            ('normal', 'white', 'default', None, None, 'h208'),
+            ('worse', 'white', 'default', None, None, 'h220'),
+            ('worst', 'white', 'default', None, None, 'h124')
+        ]
+        self.loop.screen.register_palette(palette)
 
     def start(self):
         self.loop.start()
@@ -30,7 +44,7 @@ class Window:
 
     def draw(self, map_obj):
         # Render Map
-        self.map.set_text(repr(map_obj))
+        self.map.set_text(map_obj.markup())
         # Render Scoreboard
         members = [map_obj.at(pos) for pos in map_obj.members.values()]
         members.sort(key=lambda m: m.skill.strength + m.skill.speed)
@@ -115,7 +129,8 @@ class Simulator:
         while True:
             if active_count() == 1:
                 break
-            self.draw()
+            with self.map_obj.lock:
+                self.draw()
             sleep(.2)
         self.win.stop()
         self.print_end_state()

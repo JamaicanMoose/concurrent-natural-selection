@@ -35,6 +35,9 @@ class Member(Item):
     def __repr__(self):
         return str(self.species_id)
 
+    def markup(self):
+        return repr(self)
+
     def stats(self):
         return f'Species:{self.species_id}; Speed:{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}'
 

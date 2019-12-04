@@ -6,6 +6,7 @@ from random import randint, choice, lognormvariate, uniform
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, Event, active_count
 import curses
+import math
 from time import sleep, time
 from defs import SIM_SPEED_MULT, BASE_CHANCE, nvcl, RESOURCE_MEAN, RESOURCE_STDEV
 
@@ -45,12 +46,21 @@ class Simulator:
         self.resource_spawn_rate = BASE_CHANCE//20
         self.width = 10
         self.height = 10
+        self.user_params();
         self.map_obj = Map(width=self.width,height=self.height)
         self.pos_set = pos_set = set([(i,j) for i in range(self.width) for j in range(self.height)])
         win_height = len(repr(self.map_obj).split('\n'))+1
         win_width = max([len(s) for s in repr(self.map_obj).split('\n')])+1
         self.win = Window(height=win_height, width=win_width)
         self.init_map();
+
+    def user_params(self):
+            self.num_species = int(input("Enter number of species on board (Default: 3)\n"))
+            self.num_members = int(input("Enter number of members per species (Default: 2)"))
+            self.num_resources = int(input("Enter number of resources on the board (Default: 15)"))
+            dimension = int(math.ceil(math.sqrt(self.num_resources + self.num_species * self.num_members * 1.5)))
+            self.width = 10
+            self.height = 10
 
     def init_map(self):
         for i in range(self.num_species):

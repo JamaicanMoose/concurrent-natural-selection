@@ -5,6 +5,7 @@ from item import Item
 from threading import Lock, Event
 import random
 
+
 class Map():
     def __init__(self, width, height):
         self.width = width
@@ -20,8 +21,8 @@ class Map():
         rep = ''
         repfn = lambda o: ' ' if o == None else repr(o)
         for row in self.arr:
-            rep += ' | '.join([repfn(o) for o in row]) + '\n'
-            rep += ('-'*(self.width+3*(self.width-1))) + '\n'
+            rep += '  |  '.join([repfn(o) for o in row]) + '\n'
+            rep += ('--'*(self.width+3*(self.width-1))) + '\n'
         return rep
 
     def __getitem__(self, pos):

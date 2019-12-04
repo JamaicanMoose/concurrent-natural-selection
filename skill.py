@@ -32,7 +32,27 @@ class Skill():
 
 class Resource(Item, Skill):
     def __repr__(self):
-        return 'R'
+        return ' '
+
+    def markup(self):
+        mag = (self.speed + self.strength)/2
+        if mag > 1:
+            if mag > 1.1:
+                if mag > 1.2:
+                    return [('best', repr(self))]
+                else:
+                    return [('better', repr(self))]
+            else:
+                return [('normal', repr(self))]
+        else:
+            if mag < .9:
+                if mag < .8:
+                    return [('worst', repr(self))]
+                else:
+                    return [('worse', repr(self))]
+            else:
+                return [('normal', repr(self))]
+        return [('best', repr(self))]
 
     @property
     def type(self):

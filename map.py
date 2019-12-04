@@ -4,6 +4,7 @@
 from item import Item
 from threading import Lock, Event
 import random
+from itertools import chain
 
 class Map():
     def __init__(self, width, height):
@@ -21,6 +22,19 @@ class Map():
         repfn = lambda o: ' ' if o == None else repr(o)
         for row in self.arr:
             rep += ' | '.join([repfn(o) for o in row]) + '\n'
+            rep += ('-'*(self.width+3*(self.width-1))) + '\n'
+        return rep
+
+    def markup(self):
+        def intersperse(lst, item):
+            result = [item] * (len(lst) * 2 - 1)
+            result[0::2] = lst
+            return result
+        rep = []
+        repfn = lambda o: [' '] if o == None else o.markup()
+        for row in self.arr:
+            rep += intersperse(list(chain.from_iterable([repfn(o) for o in row])), ' | ')
+            rep.append('\n')
             rep += ('-'*(self.width+3*(self.width-1))) + '\n'
         return rep
 

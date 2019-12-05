@@ -13,6 +13,7 @@ class Map():
         self.height = height
         self.arr = [[None]*width for _ in range(height)] #(row, col)
         self.members = {}
+        self._species_counts = {}
         self.resources = {}
         self.empty_pos = set([(i,j) for i in range(width) for j in range(height)])
         self.lock = Lock()
@@ -49,6 +50,22 @@ class Map():
             return item.id in self.resources
         else:
             return False
+
+    def add_species_member(self, species_id):
+        if species_id in self._species_counts:
+            self._species_counts[species_id] += 1
+        else:
+            self._species_counts[species_id] = 1
+
+    def remove_species_member(self, species_id):
+        if species_id in self._species_counts:
+            self._species_counts[species_id] -= 1
+            if self._species_counts[species_id] == 0:
+                del self._species_counts[species_id]
+
+    @property
+    def species_counts(self):
+        return self._species_counts.copy()
 
     def add(self, item, pos):
         self.remove(self.at(pos))
@@ -108,13 +125,7 @@ class Map():
         return self.game_over
 
     def check_game_over(self):
-        members = [self.at(pos) for pos in self.members.values()]
-        mem_set = set([m.species_id for m in members])
-        if len(mem_set) <= 1:
-            if len(mem_set) == 1:
-                print(f'Species {members[0].species_id} wins!')
-            elif len(mem_set) == 0:
-                print(f'All species dead.')
+        if len(self.species_counts) <= 1:
             self.game_over = True
 
 def apply_delta(curr, d): return (curr[0]+d[0], curr[1]+d[1])

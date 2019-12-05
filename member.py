@@ -14,6 +14,7 @@ class Member(Item):
         assert(reproduction_chance <= BASE_CHANCE)
         this = self
         self._exists = True
+        map_obj.add_species_member(species_id)
         def member_thread():
             while self._exists:
                 with map_obj.lock:
@@ -22,6 +23,8 @@ class Member(Item):
                     this.move(map_obj)
                     #draw_fn()
                     map_obj.check_game_over()
+                    if not self._exists:
+                        map_obj.remove_species_member(species_id)
                 max_sleep_int = 10-this.skill.speed if 10-this.skill.speed > 0 else 0
                 min_sleep_int = 10-this.skill.speed-2 if 10-this.skill.speed-2 > 0 else 0
                 sleep(uniform(min_sleep_int, max_sleep_int)/SIM_SPEED_MULT)

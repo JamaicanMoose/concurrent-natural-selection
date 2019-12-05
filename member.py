@@ -21,7 +21,6 @@ class Member(Item):
                     if map_obj.is_game_over:
                         break
                     this.move(map_obj)
-                    #draw_fn()
                     map_obj.check_game_over()
                     if not self._exists:
                         map_obj.remove_species_member(species_id)
@@ -53,14 +52,10 @@ class Member(Item):
             if randint(1, BASE_CHANCE//self.repr_chc) == 1 and self.skill.strength >= 2:
                 self.reproduce(map_obj)
             else:
-                self.walk(map_obj)
+                self.step(map_obj)
         else:
             self._exists = False
 
-    def walk(self, map_obj):
-        self.step(map_obj)
-
-    #change to increasing strength using percentage instead of adding to surrounding member kevin
     def step(self, map_obj):
         curr_loc = map_obj.loc(self)
         move = choice(((1,0), (-1,0), (0,1), (0,-1)))

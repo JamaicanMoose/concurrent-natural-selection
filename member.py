@@ -72,7 +72,6 @@ class Member(Item):
                 for item in other.skill.skill_bag:
                     other.skill.skill_bag[item] = []
             elif (skill == 'disable'):
-                print("finna disable")
                 if(len(other.moves) > 1):
                     other.moves.pop()
 

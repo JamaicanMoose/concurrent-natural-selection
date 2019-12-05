@@ -54,17 +54,17 @@ class Resource(Item, Skill):
 
     def markup(self):
         mag = (self.speed + self.strength)/2
-        if mag > 1:
-            if mag > 1.1:
-                if mag > 1.2:
+        if mag > 1.5:
+            if mag > 1.6:
+                if mag > 1.7:
                     return [('best', repr(self))]
                 else:
                     return [('better', repr(self))]
             else:
                 return [('normal', repr(self))]
         else:
-            if mag < .9:
-                if mag < .8:
+            if mag < 1.3:
+                if mag < 1.1:
                     return [('worst', repr(self))]
                 else:
                     return [('worse', repr(self))]

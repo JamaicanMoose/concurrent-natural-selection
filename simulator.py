@@ -15,12 +15,7 @@ from defs import SIM_SPEED_MULT, BASE_CHANCE, RESOURCE_MEAN, RESOURCE_STDEV
 
 class Simulator:
     def __init__(self):
-        self.num_species = 3
-        self.num_members = 2
-        self.num_resources = 15
         self.resource_spawn_rate = BASE_CHANCE//20
-        self.width = 10
-        self.height = 10
         self.user_params();
         self.map_obj = Map(width=self.width,height=self.height)
         self.pos_set = pos_set = set([(i,j) for i in range(self.width) for j in range(self.height)])
@@ -32,8 +27,8 @@ class Simulator:
             self.num_members = int(input("Enter number of members per species (Default: 2) : ") or 2)
             self.num_resources = int(input("Enter number of resources on the board (Default: 15) : ") or 15)
             dimension = int(math.ceil(math.sqrt(self.num_resources + self.num_species * self.num_members * 1.5)))
-            self.width = 10
-            self.height = 10
+            self.width = dimension
+            self.height = dimension
 
     def init_map(self):
         for i in range(self.num_species):
@@ -68,6 +63,7 @@ class Simulator:
                 r = Resource(
                     strength=lnv(RESOURCE_MEAN, RESOURCE_STDEV),
                     speed=lnv(RESOURCE_MEAN, RESOURCE_STDEV))
+                r.add_to_bag()
                 pos = choice(list(self.map_obj.empty_pos))
                 self.map_obj.add(r, pos)
             sleep(uniform(0, BASE_CHANCE/self.resource_spawn_rate)/SIM_SPEED_MULT)
@@ -87,8 +83,8 @@ class Simulator:
         self.win.draw(self.map_obj)
 
     def start(self):
-        self.win.start()
-        signal(SIGINT, self._ctrlc_handler)
+        # self.win.start()
+        # signal(SIGINT, self._ctrlc_handler)
         for m in self.members():
             m._thread.start()
         Thread(target=self._random_resource_inclusion_thread).start()
@@ -96,7 +92,7 @@ class Simulator:
             with self.map_obj.lock:
                 if self.map_obj.is_game_over:
                     break
-                self.draw()
+                # self.draw()
             sleep(.2)
-        self.win.stop()
+        # self.win.stop()
         self.print_end_state()

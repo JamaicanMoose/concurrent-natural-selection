@@ -8,6 +8,7 @@ from map import Map, apply_delta
 from threading import Thread, Event
 from time import sleep
 from defs import SIM_SPEED_MULT, BASE_CHANCE
+import random
 
 class Member(Item):
     def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, reproduction_chance: int):
@@ -56,6 +57,16 @@ class Member(Item):
         else:
             self._exists = False
 
+    def use_bag(self, other):
+        bag = self.skill.skill_bag
+        skill = random.choice(list(bag.keys()))
+        amounts = bag[skill]
+        if amounts:
+            if (skill == 'injure'):
+                print("!")
+                amt = amounts.pop()
+                other.skill.strength *= amt
+
     def step(self, map_obj):
         curr_loc = map_obj.loc(self)
         move = choice(((1,0), (-1,0), (0,1), (0,-1)))
@@ -71,6 +82,7 @@ class Member(Item):
                 if self.skill.strength > other.skill.strength:
                     map_obj.move(self, new_loc)
                 elif self.skill.strength < other.skill.strength:
+                    self.use_bag(other)
                     map_obj.remove(self)
                     return False
                 else:

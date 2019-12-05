@@ -1,11 +1,29 @@
 # pylint: skip-file
-
+import random
 from item import Item
 
 class Skill():
-    def __init__(self, strength: int = 0, speed: int = 0):
+    def __init__(self, strength: int = 0, speed: int = 0, skill_bag: dict = {"injure": []}):
         self.strength = strength
         self.speed = speed
+        self.skill_bag = {"injure": []}
+    def add_to_bag(self):
+        skill = random.choice(list(self.skill_bag.keys()))
+        print(skill)
+        self.skill_bag[skill].append(random.random())
+    def merge_bags(self, bag2):
+        newbag = {}
+        for item in self.skill_bag:
+            if item in newbag:
+                newbag[item] += self.skill_bag[item]
+            else:
+                newbag[item] = []
+        for item in bag2:
+            if item in newbag:
+                newbag[item] += bag2[item]
+            else:
+                newbag[item] = []
+        return newbag
     def __repr__(self):
         return f'Skill(strength={self.strength}, speed={self.speed})'
     def __add__(self, other):
@@ -23,9 +41,10 @@ class Skill():
     def __mul__(self, other):
         return Skill(
             strength=self.strength*other.strength,
-            speed=self.speed*other.speed)
+            speed=self.speed*other.speed,
+            skill_bag=self.merge_bags(other.skill_bag))
     def copy(self):
-        return Skill(
+        return Skill(skill_bag=self.skill_bag,
             strength=self.strength,
             speed=self.speed)
 

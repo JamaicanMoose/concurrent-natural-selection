@@ -3,13 +3,12 @@ import random
 from item import Item
 
 class Skill():
-    def __init__(self, strength: int = 0, speed: int = 0, skill_bag: dict = {"injure": []}):
+    def __init__(self, strength: int = 0, speed: int = 0, skill_bag: dict = {"injure": [], "poison": [], "klutz": [], "disable": []}):
         self.strength = strength
         self.speed = speed
-        self.skill_bag = {"injure": []}
+        self.skill_bag = skill_bag
     def add_to_bag(self):
         skill = random.choice(list(self.skill_bag.keys()))
-        print(skill)
         self.skill_bag[skill].append(random.random())
     def merge_bags(self, bag2):
         newbag = {}
@@ -39,10 +38,11 @@ class Skill():
             strength=self.strength//div,
             speed=self.speed//div)
     def __mul__(self, other):
-        return Skill(
+        skill = Skill(
             strength=self.strength*other.strength,
             speed=self.speed*other.speed,
             skill_bag=self.merge_bags(other.skill_bag))
+        return skill
     def copy(self):
         return Skill(skill_bag=self.skill_bag,
             strength=self.strength,

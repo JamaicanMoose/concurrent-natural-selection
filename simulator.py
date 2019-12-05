@@ -6,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Thread, Event, active_count
 from time import sleep, time
 from signal import signal, SIGINT
-
+import random
 from map import Map
 from gui import Window
 from member import Member
@@ -33,12 +33,11 @@ class Simulator:
     def init_map(self):
         for i in range(self.num_species):
             for _ in range(self.num_members):
+                skill=Skill(strength=uniform(0,10), speed=uniform(0,3))
                 m = Member(
                     draw_fn=self.draw,
                     map_obj=self.map_obj,
-                    skill=Skill(
-                        strength=uniform(0,10),
-                        speed=uniform(0,3)),
+                    skill=skill,
                     species_id=i,
                     reproduction_chance=BASE_CHANCE//10)
                 pos = choice(list(self.pos_set))
@@ -46,8 +45,9 @@ class Simulator:
                 self.map_obj.add(m, pos)
         for _ in range(self.num_resources):
             r = Resource(
-                strength=lnv(RESOURCE_MEAN, RESOURCE_STDEV),
-                speed=lnv(RESOURCE_MEAN, RESOURCE_STDEV))
+                strength=1+random.random(),
+                speed=1+random.random())
+            r.add_to_bag()
             pos = choice(list(self.pos_set))
             self.pos_set.remove(pos)
             self.map_obj.add(r, pos)
@@ -61,8 +61,8 @@ class Simulator:
                 if self.map_obj.is_game_over:
                     break
                 r = Resource(
-                    strength=lnv(RESOURCE_MEAN, RESOURCE_STDEV),
-                    speed=lnv(RESOURCE_MEAN, RESOURCE_STDEV))
+                    strength=1+random.random(),
+                    speed=1+random.random())
                 r.add_to_bag()
                 pos = choice(list(self.map_obj.empty_pos))
                 self.map_obj.add(r, pos)
@@ -83,8 +83,8 @@ class Simulator:
         self.win.draw(self.map_obj)
 
     def start(self):
-        # self.win.start()
-        # signal(SIGINT, self._ctrlc_handler)
+        self.win.start()
+        signal(SIGINT, self._ctrlc_handler)
         for m in self.members():
             m._thread.start()
         Thread(target=self._random_resource_inclusion_thread).start()
@@ -92,7 +92,7 @@ class Simulator:
             with self.map_obj.lock:
                 if self.map_obj.is_game_over:
                     break
-                # self.draw()
+                self.draw()
             sleep(.2)
-        # self.win.stop()
+        self.win.stop()
         self.print_end_state()

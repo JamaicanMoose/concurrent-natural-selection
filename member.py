@@ -34,6 +34,7 @@ class Member(Item):
         self.skill = skill.copy()
         self.species_id = species_id
         self.repr_chc = reproduction_chance
+        self.moves = [(1,0), (-1,0), (0,1), (0,-1)]
 
     def __repr__(self):
         return str(self.species_id)
@@ -61,15 +62,23 @@ class Member(Item):
         bag = self.skill.skill_bag
         skill = random.choice(list(bag.keys()))
         amounts = bag[skill]
-        if amounts:
+        if amounts:                
+            amt = amounts.pop()
             if (skill == 'injure'):
-                print("!")
-                amt = amounts.pop()
                 other.skill.strength *= amt
+            elif (skill == 'poison'):
+                other.skill.speed *= amt
+            elif (skill == 'klutz'):
+                for item in other.skill.skill_bag:
+                    other.skill.skill_bag[item] = []
+            elif (skill == 'disable'):
+                print("finna disable")
+                if(len(other.moves) > 1):
+                    other.moves.pop()
 
     def step(self, map_obj):
         curr_loc = map_obj.loc(self)
-        move = choice(((1,0), (-1,0), (0,1), (0,-1)))
+        move = choice(self.moves)
         new_loc = apply_delta(curr_loc, move)
         if map_obj.in_bounds(new_loc):
             if map_obj.at(new_loc) == None:

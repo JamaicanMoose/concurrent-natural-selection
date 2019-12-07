@@ -7,6 +7,8 @@ git clone https://github.com/JamaicanMoose/concurrent-natural-selection
 cd concurrent-natural-selection
 pip install -r requirements.txt
 python selection_game.py
+
+# then add in user input for game configurations!
 ```
 
 

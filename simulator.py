@@ -16,16 +16,29 @@ from defs import SIM_SPEED_MULT, BASE_CHANCE, RESOURCE_MEAN, RESOURCE_STDEV
 class Simulator:
     def __init__(self):
         self.resource_spawn_rate = BASE_CHANCE//20
-        self.user_params();
+        self.user_skill = 0
+        self.user_speed = 0
+        self.user_strength = 0
+        self.user_params()
         self.map_obj = Map(width=self.width,height=self.height)
         self.pos_set = set([(i,j) for i in range(self.height) for j in range(self.width)])
         self.win = Window()
         self.init_map();
 
+    def create_species(self):
+        print("You will be species 0.")
+        self.user_speed = float(input("Enter speed of your species (0-3) : ") or uniform(0,3))
+        self.user_strength = float(input("Enter strength of your species (0-10) : ") or uniform(0,10))
+
     def user_params(self):
             self.num_species = int(input("Enter number of species on board (Default: 3) : ") or 3)
             self.num_members = int(input("Enter number of members per species (Default: 2) : ") or 2)
             self.num_resources = int(input("Enter number of resources on the board (Default: 15) : ") or 15)
+            if input("Would you like to create a species? ") == 'Y':
+                self.create_species() 
+            else:
+                self.user_speed = uniform(0,3)
+                self.user_strength = uniform(0,10)
             dimension = int(math.ceil(math.sqrt(self.num_resources + self.num_species * self.num_members * 1.5)))
             self.width = 0
             self.height = 0
@@ -37,7 +50,18 @@ class Simulator:
                     print("There isnt enough space on the board for the specified items!")
 
     def init_map(self):
-        for i in range(self.num_species):
+        for _ in range(self.num_members):
+            skill= Skill(strength=self.user_strength, speed=self.user_speed)
+            m = Member(
+                draw_fn=self.draw,
+                map_obj=self.map_obj,
+                skill=skill,
+                species_id=0,
+                reproduction_chance=BASE_CHANCE//10)
+            pos = choice(list(self.pos_set))
+            self.pos_set.remove(pos)
+            self.map_obj.add(m, pos)
+        for i in range(1, self.num_species):
             for _ in range(self.num_members):
                 skill=Skill(strength=uniform(0,10), speed=uniform(0,3))
                 m = Member(

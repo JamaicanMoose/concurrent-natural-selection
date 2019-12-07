@@ -1,5 +1,15 @@
 # selection_game
 
+$$ How to Run Our Program
+
+```
+git clone https://github.com/JamaicanMoose/concurrent-natural-selection
+cd concurrent-natural-selection
+pip install -r requirements.txt
+python selection_game.py
+```
+
+
 ## File Structure
  
 * defs.py
@@ -12,6 +22,8 @@
     * Holds the Map class. Used to add, delete, and move items and members in our data representation of the simulation
 * member.py
     * Holds the Member class. Handles the moves that a member can make.
+* requirements.txt
+    * Packages to install in order to use our program
 * selection_game.py
     * File that holds the main function and runs simulator
 * simulator.py

@@ -18,7 +18,7 @@ class Simulator:
         self.resource_spawn_rate = BASE_CHANCE//20
         self.user_params();
         self.map_obj = Map(width=self.width,height=self.height)
-        self.pos_set = pos_set = set([(i,j) for i in range(self.width) for j in range(self.height)])
+        self.pos_set = set([(i,j) for i in range(self.height) for j in range(self.width)])
         self.win = Window()
         self.init_map();
 
@@ -27,8 +27,14 @@ class Simulator:
             self.num_members = int(input("Enter number of members per species (Default: 2) : ") or 2)
             self.num_resources = int(input("Enter number of resources on the board (Default: 15) : ") or 15)
             dimension = int(math.ceil(math.sqrt(self.num_resources + self.num_species * self.num_members * 1.5)))
-            self.width = dimension
-            self.height = dimension
+            self.width = 0
+            self.height = 0
+            print(f"Minimum Number of Spaces: {dimension**2}")
+            while(self.width*self.height < dimension**2):
+                self.width = int(input("Enter width of the board : ") or dimension)
+                self.height = int(input("Enter height of the board : ") or dimension)
+                if self.width*self.height < dimension**2:
+                    print("There isnt enough space on the board for the specified items!")
 
     def init_map(self):
         for i in range(self.num_species):
@@ -47,7 +53,8 @@ class Simulator:
             r = Resource(
                 strength=1+random.random(),
                 speed=1+random.random())
-            r.add_to_bag()
+            if random.random() > 0.75:
+                r.add_to_bag()
             pos = choice(list(self.pos_set))
             self.pos_set.remove(pos)
             self.map_obj.add(r, pos)
@@ -63,7 +70,8 @@ class Simulator:
                 r = Resource(
                     strength=1+random.random(),
                     speed=1+random.random())
-                r.add_to_bag()
+                if random.random() > 0.75:
+                    r.add_to_bag()
                 pos = choice(list(self.map_obj.empty_pos))
                 self.map_obj.add(r, pos)
             sleep(uniform(0, BASE_CHANCE/self.resource_spawn_rate)/SIM_SPEED_MULT)

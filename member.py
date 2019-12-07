@@ -8,6 +8,8 @@ from map import Map, apply_delta
 from threading import Thread, Event
 from time import sleep
 from defs import SIM_SPEED_MULT, BASE_CHANCE
+from itertools import chain
+from statistics import mean
 import random
 
 class Member(Item):
@@ -17,14 +19,14 @@ class Member(Item):
         self._exists = True
         map_obj.add_species_member(species_id)
         def member_thread():
-            while self._exists:
+            while self._exists: # If we were killed while sleeping then exit thread.
                 with map_obj.lock:
-                    if map_obj.is_game_over:
+                    if not self._exists: # If we were killed while waiting for lock then exit thread.
+                        break
+                    if map_obj.is_game_over: # If the game is over and we're not dead then exit thread.
                         break
                     this.move(map_obj)
                     map_obj.check_game_over()
-                    if not self._exists:
-                        map_obj.remove_species_member(species_id)
                 max_sleep_int = 10-this.skill.speed if 10-this.skill.speed > 0 else 0
                 min_sleep_int = 10-this.skill.speed-2 if 10-this.skill.speed-2 > 0 else 0
                 sleep(uniform(min_sleep_int, max_sleep_int)/SIM_SPEED_MULT)
@@ -43,7 +45,9 @@ class Member(Item):
         return repr(self)
 
     def stats(self):
-        return f'Species:{self.species_id}; Speed:{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}'
+        skill_bag_chain = list(chain.from_iterable(self.skill.skill_bag.values()))
+        skill_bag_mag = mean(skill_bag_chain) if skill_bag_chain else 1
+        return f'Species:{self.species_id}; Speed:{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}; Skill-Bag:{skill_bag_mag:.2f}'
 
     @property
     def type(self):
@@ -72,11 +76,12 @@ class Member(Item):
                 for item in other.skill.skill_bag:
                     other.skill.skill_bag[item] = []
             elif (skill == 'disable'):
-                if(len(other.moves) > 1):
-                    other.moves.pop()
+                other.moves.pop()
 
     def step(self, map_obj):
         curr_loc = map_obj.loc(self)
+        if len(self.moves) <= 0:
+            return
         move = choice(self.moves)
         new_loc = apply_delta(curr_loc, move)
         if map_obj.in_bounds(new_loc):
@@ -88,16 +93,21 @@ class Member(Item):
             elif isinstance(map_obj.at(new_loc), Member):
                 other = map_obj.at(new_loc)
                 if self.skill.strength > other.skill.strength:
+                    other.use_bag(self)
                     map_obj.move(self, new_loc)
+                    map_obj.remove_species_member(other.species_id)
                 elif self.skill.strength < other.skill.strength:
                     self.use_bag(other)
                     map_obj.remove(self)
-                    return False
+                    map_obj.remove_species_member(self.species_id)
+                    return
                 else:
                     map_obj.remove(self)
                     map_obj.remove(other)
-                    return False
-            return True
+                    map_obj.remove_species_member(self.species_id)
+                    map_obj.remove_species_member(other.species_id)
+                    return
+            return
 
     def reproduce(self, map_obj):
         curr_loc = map_obj.members[str(id(self))]

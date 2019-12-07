@@ -11,11 +11,11 @@ class Map():
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.arr = [[None]*width for _ in range(height)] #(row, col)
+        self.arr = [[None]*(width) for _ in range(height)] #(row, col)
         self.members = {}
         self._species_counts = {}
         self.resources = {}
-        self.empty_pos = set([(i,j) for i in range(width) for j in range(height)])
+        self.empty_pos = set([(i,j) for i in range(height) for j in range(width)])
         self.lock = Lock()
         self.game_over = False
 

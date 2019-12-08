@@ -13,25 +13,35 @@ from statistics import mean
 import random
 
 class Member(Item):
-    def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, reproduction_chance: int):
+    '''Adds member to the the map and intializes member parameters'''
+    def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, 
+                                    reproduction_chance: int):
         assert(reproduction_chance <= BASE_CHANCE)
         this = self
         self._exists = True
         map_obj.add_species_member(species_id)
+        #member thread keeps moving until killed 
         def member_thread():
-            while self._exists: # If we were killed while sleeping then exit thread.
+            while self._exists: 
+            # If we were killed while sleeping then exit thread.
                 with map_obj.lock:
-                    if not self._exists: # If we were killed while waiting for lock then exit thread.
+                    if not self._exists: 
+                    # If we were killed while waiting for lock then exit thread.
                         break
-                    if map_obj.is_game_over: # If the game is over and we're not dead then exit thread.
+                    if map_obj.is_game_over: 
+                    # If the game is over and we're not dead then exit thread.
                         break
                     this.move(map_obj)
                     map_obj.check_game_over()
-                max_sleep_int = 10-this.skill.speed if 10-this.skill.speed > 0 else 0
-                min_sleep_int = 10-this.skill.speed-2 if 10-this.skill.speed-2 > 0 else 0
+                max_sleep_int = 10-this.skill.speed if 10-this.skill.speed > 0 \
+                                else 0
+                min_sleep_int = 10-this.skill.speed-2 if 10-this.skill.speed-2 \
+                                > 0 else 0
+                #length of sleep before next move based on member speed
                 sleep(uniform(min_sleep_int, max_sleep_int)/SIM_SPEED_MULT)
         self._thread = Thread(target=member_thread)
         self._draw_fn = draw_fn
+        #stored for reproduced species to have same initial skill
         self.init_skill = skill.copy()
         self.skill = skill.copy()
         self.species_id = species_id
@@ -45,17 +55,23 @@ class Member(Item):
         return repr(self)
 
     def stats(self):
-        skill_bag_chain = list(chain.from_iterable(self.skill.skill_bag.values()))
+        '''Provides a measure of how favorable a member's skills are'''
+        skill_bag_chain = list(chain.from_iterable(
+                                self.skill.skill_bag.values()))
         skill_bag_mag = mean(skill_bag_chain) if skill_bag_chain else 1
-        return f'Species:{self.species_id}; Speed:{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}; Skill-Bag:{skill_bag_mag:.2f}'
+        return f'Species:{self.species_id}: Speed:\
+{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}; Skill-Bag:\
+{skill_bag_mag:.2f}'
 
     @property
     def type(self):
         return 'member'
 
     def move(self, map_obj):
+        '''Randomly chooses if member reproduces or takes a step on the board'''
         if self in map_obj:
-            if randint(1, BASE_CHANCE//self.repr_chc) == 1 and self.skill.strength >= 2:
+            if randint(1, BASE_CHANCE//self.repr_chc) == 1 and 
+                    self.skill.strength >= 2:
                 self.reproduce(map_obj)
             else:
                 self.step(map_obj)
@@ -63,22 +79,30 @@ class Member(Item):
             self._exists = False
 
     def use_bag(self, other):
+        '''Chooses a random skill type for a member to use on 
+            another from the bag and uses it'''
         bag = self.skill.skill_bag
         skill = random.choice(list(bag.keys()))
         amounts = bag[skill]
         if amounts:                
             amt = amounts.pop()
             if (skill == 'injure'):
+                #decreases the other's skill
                 other.skill.strength *= amt
             elif (skill == 'poison'):
+                #decreases the other's strength
                 other.skill.speed *= amt
             elif (skill == 'klutz'):
+                #empties the skill bag of the other member
                 for item in other.skill.skill_bag:
                     other.skill.skill_bag[item] = []
             elif (skill == 'disable'):
-                other.moves.pop()
+                #disables other member by removing one of its moves.
+                if len(other.moves > 0):
+                    other.moves.pop()
 
     def step(self, map_obj):
+        '''Moves the member and battles or picks up a resource.'''
         curr_loc = map_obj.loc(self)
         if len(self.moves) <= 0:
             return
@@ -88,11 +112,14 @@ class Member(Item):
             if map_obj.at(new_loc) == None:
                 map_obj.move(self, new_loc)
             elif isinstance(map_obj.at(new_loc), Resource):
+                #if there is a resource, increase the users skill
                 self.skill *= map_obj.at(new_loc)
                 map_obj.move(self, new_loc)
             elif isinstance(map_obj.at(new_loc), Member):
+                #if there is another member, battle and the stronger member wins
                 other = map_obj.at(new_loc)
                 if self.skill.strength > other.skill.strength:
+                    #losing species damages other species by using item in bag
                     other.use_bag(self)
                     map_obj.move(self, new_loc)
                     map_obj.remove_species_member(other.species_id)
@@ -110,8 +137,11 @@ class Member(Item):
             return
 
     def reproduce(self, map_obj):
+        '''Reproduces member by creating a new member of the species 
+            (with initial skill)'''
         curr_loc = map_obj.members[str(id(self))]
-        adj_set = [apply_delta(curr_loc, d) for d in ((1,0), (-1,0), (0,1), (0,-1))]
+        adj_set = [apply_delta(curr_loc, d) for d in \
+                    ((1,0), (-1,0), (0,1), (0,-1))]
         shuffle(adj_set)
         for pos in adj_set:
             if map_obj.in_bounds(pos) and map_obj.at(pos) == None:

@@ -14,21 +14,21 @@ import random
 
 class Member(Item):
     '''Adds member to the the map and intializes member parameters'''
-    def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int, 
+    def __init__(self, draw_fn, map_obj, skill: Skill, species_id: int,
                                     reproduction_chance: int):
         assert(reproduction_chance <= BASE_CHANCE)
         this = self
         self._exists = True
         map_obj.add_species_member(species_id)
-        #member thread keeps moving until killed 
+        #member thread keeps moving until killed
         def member_thread():
-            while self._exists: 
+            while self._exists:
             # If we were killed while sleeping then exit thread.
                 with map_obj.lock:
-                    if not self._exists: 
+                    if not self._exists:
                     # If we were killed while waiting for lock then exit thread.
                         break
-                    if map_obj.is_game_over: 
+                    if map_obj.is_game_over:
                     # If the game is over and we're not dead then exit thread.
                         break
                     this.move(map_obj)
@@ -58,9 +58,10 @@ class Member(Item):
         '''Provides a measure of how favorable a member's skills are'''
         skill_bag_chain = self.skill.skill_bag.values()
         skill_bag_mag = mean(skill_bag_chain) if skill_bag_chain else 1
-        return f'Species:{self.species_id}: Speed:\
-{self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}; Skill-Bag:\
-{skill_bag_mag:.2f}'
+        strs = [f'Species:{self.species_id}', f'Speed:{self.skill.speed:.2f}',
+                f'Strength:{self.skill.strength:.2f}',
+                f'Skill-Bag:{skill_bag_mag:.2f}']
+        return '; '.join(strs)
 
     @property
     def type(self):
@@ -78,12 +79,12 @@ class Member(Item):
             self._exists = False
 
     def use_bag(self, other):
-        '''Chooses a random skill type for a member to use on 
+        '''Chooses a random skill type for a member to use on
             another from the bag and uses it'''
         bag = self.skill.skill_bag
         skill = random.choice(list(bag.keys()))
         amount = bag[skill]
-        if amount:                
+        if amount:
             if (skill == 'injure'):
                 #decreases the other's skill
                 other.skill.strength *= amount
@@ -135,7 +136,7 @@ class Member(Item):
             return
 
     def reproduce(self, map_obj):
-        '''Reproduces member by creating a new member of the species 
+        '''Reproduces member by creating a new member of the species
             (with initial skill)'''
         curr_loc = map_obj.members[str(id(self))]
         adj_set = [apply_delta(curr_loc, d) for d in \

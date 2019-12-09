@@ -15,7 +15,8 @@ class Map():
         self.members = {}
         self._species_counts = {}
         self.resources = {}
-        self.empty_pos = set([(i,j) for i in range(height) for j in range(width)])
+        self.empty_pos = set([(i,j) for i in range(height) for j in\
+                                                                 range(width)])
         self.lock = Lock()
         self.game_over = False
 
@@ -36,7 +37,8 @@ class Map():
         rep = []
         repfn = lambda o: [' '] if o == None else o.markup()
         for row in self.arr:
-            rep += intersperse(list(chain.from_iterable([repfn(o) for o in row])), ' | ')
+            rep += intersperse(list(chain.from_iterable(
+                                [repfn(o) for o in row])), ' | ')
             rep.append('\n')
             rep += ('-'*(self.width+3*(self.width-1))) + '\n'
         return rep

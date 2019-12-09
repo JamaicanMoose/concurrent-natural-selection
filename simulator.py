@@ -58,8 +58,8 @@ class Simulator:
         dimension = int(math.ceil(math.sqrt(
                     self.num_resources + self.num_species 
                     * self.num_members * 1.5)))
-        self.width = dimension
-        self.height = dimension
+        self.width = 0
+        self.height = 0
         print(f"Minimum Number of Spaces: {dimension**2}")
         while(self.width*self.height < dimension**2):
             self.width = int(input("Enter width of the board") or dimension)

@@ -3,7 +3,7 @@ import random
 from item import Item
 
 class Skill():
-    def __init__(self, strength: int = 0, speed: int = 0, 
+    def __init__(self, strength: int = 0, speed: int = 0,
         skill_bag: dict = {"injure": 1, "poison": 1, "klutz": 1, "disable": 1}):
         self.strength = strength
         self.speed = speed
@@ -17,12 +17,12 @@ class Skill():
         newbag = {}
         for item in self.skill_bag:
             if item in newbag:
-                newbag[item] = max(self.skill_bag[item], other_bag[item])
+                newbag[item] = min(self.skill_bag[item], other_bag[item])
             else:
                 newbag[item] = 1
         for item in other_bag:
             if item in newbag:
-                newbag[item] += max(self.skill_bag[item], other_bag[item])
+                newbag[item] += min(self.skill_bag[item], other_bag[item])
             else:
                 newbag[item] = 1
         return newbag

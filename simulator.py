@@ -50,7 +50,7 @@ class Simulator:
         self.num_resources = int(input(
                     "Enter number of resources on the board (Default: 15) : ") 
                                 or 15)
-        if input("Would you like to create a species? ") == 'Y':
+        if input("Would you like to create a species? (Y/N) ").lower() == 'y':
             self.create_species() 
         else:
             self.user_speed = uniform(0,3)
@@ -62,8 +62,8 @@ class Simulator:
         self.height = 0
         print(f"Minimum Number of Spaces: {dimension**2}")
         while(self.width*self.height < dimension**2):
-            self.width = int(input("Enter width of the board") or dimension)
-            self.height = int(input("Enter height of the board") or dimension)
+            self.width = int(input("Enter width of the board: ") or dimension)
+            self.height = int(input("Enter height of the board: ") or dimension)
             if self.width*self.height < dimension**2:
                 print("Not enough space on board for specified items!")
 

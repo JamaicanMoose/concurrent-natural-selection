@@ -1,5 +1,6 @@
 # pylint: skip-file
 class Item():
+    '''Parent class of Item and Resource'''
     def __repr__(self):
         return 'I'
 

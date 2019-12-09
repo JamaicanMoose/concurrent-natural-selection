@@ -56,8 +56,7 @@ class Member(Item):
 
     def stats(self):
         '''Provides a measure of how favorable a member's skills are'''
-        skill_bag_chain = list(chain.from_iterable(
-                                self.skill.skill_bag.values()))
+        skill_bag_chain = self.skill.skill_bag.values()
         skill_bag_mag = mean(skill_bag_chain) if skill_bag_chain else 1
         return f'Species:{self.species_id}: Speed:\
 {self.skill.speed:.2f}; Strength:{self.skill.strength:.2f}; Skill-Bag:\
@@ -70,8 +69,8 @@ class Member(Item):
     def move(self, map_obj):
         '''Randomly chooses if member reproduces or takes a step on the board'''
         if self in map_obj:
-            if randint(1, BASE_CHANCE//self.repr_chc) == 1 and 
-                    self.skill.strength >= 2:
+            if randint(1, BASE_CHANCE//self.repr_chc) == 1 and\
+            self.skill.strength >= 2:
                 self.reproduce(map_obj)
             else:
                 self.step(map_obj)
@@ -83,22 +82,21 @@ class Member(Item):
             another from the bag and uses it'''
         bag = self.skill.skill_bag
         skill = random.choice(list(bag.keys()))
-        amounts = bag[skill]
-        if amounts:                
-            amt = amounts.pop()
+        amount = bag[skill]
+        if amount:                
             if (skill == 'injure'):
                 #decreases the other's skill
-                other.skill.strength *= amt
+                other.skill.strength *= amount
             elif (skill == 'poison'):
                 #decreases the other's strength
-                other.skill.speed *= amt
+                other.skill.speed *= amount
             elif (skill == 'klutz'):
                 #empties the skill bag of the other member
                 for item in other.skill.skill_bag:
-                    other.skill.skill_bag[item] = []
+                    other.skill.skill_bag[item] = 1
             elif (skill == 'disable'):
                 #disables other member by removing one of its moves.
-                if len(other.moves > 0):
+                if len(other.moves) > 0 and amount != 1:
                     other.moves.pop()
 
     def step(self, map_obj):
